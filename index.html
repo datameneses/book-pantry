@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Pantry</title>
+  <meta name="description" content="A personal archive of books read, being read, and waiting on the to-read list.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Book Pantry">
+  <meta property="og:title" content="Book Pantry">
+  <meta property="og:description" content="A personal archive of books read, being read, and waiting on the to-read list.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="read">
+  <header class="site-header">
+    <a class="brand" href="index.html">Book Pantry</a>
+    <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav class="site-nav">
+      <a href="index.html" data-pt="Lidos">Read</a>
+      <a href="tbr.html" data-pt="Quero ler">To Read</a>
+      <div class="lang-toggle-group">
+        <button class="lang-toggle active" data-lang="en" type="button">EN</button>
+        <button class="lang-toggle" data-lang="pt" type="button">PT-BR</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h1 data-pt="Lidos">Read</h1>
+    <p class="page-intro" data-pt="Livros que li e estou lendo, com as minhas notas.">Books I've read and am reading, with my ratings.</p>
+
+    <div class="dashboard" id="books-dashboard"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label" data-pt="Ordenar por:">Sort by:</span>
+        <button class="toolbar-btn" data-sort="author" type="button" data-pt="Autor">Author</button>
+        <button class="toolbar-btn" data-sort="genre" type="button" data-pt="Gênero">Genre</button>
+        <button class="toolbar-btn" data-sort="year" type="button" data-pt="Ano">Year</button>
+        <button class="toolbar-btn" data-sort="status" type="button" data-pt="Status">Status</button>
+        <button class="toolbar-btn active" data-sort="rating" type="button" data-pt="Minha nota">My Rating</button>
+      </div>
+      <div class="toolbar-group">
+        <span class="toolbar-label" data-pt="Filtro:">Filter:</span>
+        <select id="filter-author"><option value="" data-pt="Todos os autores">All authors</option></select>
+        <select id="filter-genre"><option value="" data-pt="Todos os gêneros">All genres</option></select>
+        <select id="filter-format">
+          <option value="" data-pt="Todos os formatos">All formats</option>
+          <option value="Libby">Libby</option>
+          <option value="Kobo Store">Kobo Store</option>
+          <option value="Physical" data-pt="Físico">Physical</option>
+        </select>
+        <select id="filter-status">
+          <option value="" data-pt="Todos os status">All statuses</option>
+          <option value="reading" data-pt="Lendo">Reading</option>
+          <option value="read" data-pt="Lido">Read</option>
+          <option value="highlighted" data-pt="Lido + Destacado">Read + Highlighted</option>
+          <option value="distilled" data-pt="Lido + Destacado + Destilado em notas">Read + Highlighted + Distilled</option>
+        </select>
+        <select id="filter-rating">
+          <option value="" data-pt="Todas as notas">All ratings</option>
+          <option value="exceptional" data-pt="Excepcional (5.0)">Exceptional (5.0)</option>
+          <option value="very-good" data-pt="Muito bom (4.5)">Very good (4.5)</option>
+          <option value="good" data-pt="Bom (4.0)">Good (4.0)</option>
+          <option value="average" data-pt="Mediano (3.5)">Average (3.5)</option>
+          <option value="disliked" data-pt="Não gostei (≤3.0)">Disliked (≤3.0)</option>
+          <option value="unrated" data-pt="Ainda não avaliado">Not yet rated</option>
+        </select>
+        <button class="toolbar-btn" id="reset-filters" type="button" data-pt="Redefinir">Reset</button>
+      </div>
+    </div>
+
+    <div class="card-grid book-grid" id="books-list"></div>
+
+  </main>
+
+  <footer class="site-footer" data-pt="Book Pantry (um projeto pessoal)">Book Pantry (a personal project)</footer>
+  <script src="js/main.js"></script>
+  <script>
+    const STATUS_ORDER = ["reading", "read", "highlighted", "distilled"];
+    const STATUS_COLORS = { reading: "#7FB3A8", read: "#A9B0BC", highlighted: "#F2D9A6", distilled: "#E0A64A" };
+    const FORMAT_ORDER = ["Physical", "Libby", "Kobo Store"];
+    const FORMAT_COLORS = { Physical: "var(--color-accent)", Libby: "var(--color-secondary)", "Kobo Store": "#C46A5A" };
+
+    function countBy(data, keyFn) {
+      const counts = {};
+      data.forEach((item) => {
+        const key = keyFn(item);
+        if (!key) return;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function renderHBarChart(title, counts, labelFn) {
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const max = Math.max(...entries.map(([, v]) => v), 1);
+      const rows = entries.map(([label, value]) => `
+        <div class="hbar-row" title="${labelFn(label)}: ${value}">
+          <span class="hbar-label">${labelFn(label)}</span>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${(value / max) * 100}%"></div></div>
+          <span class="hbar-value">${value}</span>
+        </div>`).join("");
+      return `<div class="dashboard-card"><p class="dashboard-title">${title}</p>${rows}</div>`;
+    }
+
+    function renderStatusChart(counts) {
+      const max = Math.max(...STATUS_ORDER.map((s) => counts[s] || 0), 1);
+      const cols = STATUS_ORDER.map((s) => {
+        const value = counts[s] || 0;
+        const heightPct = value ? (value / max) * 100 : 2;
+        return `
+          <div class="vbar-col" title="${t(STATUS_LABEL[s])}: ${value}">
+            <div class="vbar-bar-area">
+              <span class="vbar-value">${value}</span>
+              <div class="vbar-fill" style="height:${heightPct}%; background:${STATUS_COLORS[s]}"></div>
+            </div>
+            <span class="vbar-label">${t(STATUS_LABEL[s])}</span>
+          </div>`;
+      }).join("");
+      return `<div class="dashboard-card"><p class="dashboard-title">${t("Books by Status")}</p><div class="vbar-chart">${cols}</div></div>`;
+    }
+
+    function renderDonutChart(counts) {
+      const total = FORMAT_ORDER.reduce((sum, key) => sum + (counts[key] || 0), 0) || 1;
+      let cumulative = 0;
+      const segments = FORMAT_ORDER.map((key) => {
+        const pct = ((counts[key] || 0) / total) * 100;
+        const seg = `${FORMAT_COLORS[key]} ${cumulative}% ${cumulative + pct}%`;
+        cumulative += pct;
+        return seg;
+      }).join(", ");
+      const legend = FORMAT_ORDER.map((key) =>
+        `<li><span class="swatch" style="background:${FORMAT_COLORS[key]}"></span>${t(key)} (${counts[key] || 0})</li>`).join("");
+      return `
+        <div class="dashboard-card">
+          <p class="dashboard-title">${t("Books by Format")}</p>
+          <div class="donut-wrap">
+            <div class="donut" style="background: conic-gradient(${segments})">
+              <div class="donut-hole"><span>${total}</span><small>${t("books")}</small></div>
+            </div>
+            <ul class="donut-legend">${legend}</ul>
+          </div>
+        </div>`;
+    }
+
+    function renderDashboard(data) {
+      document.getElementById("books-dashboard").innerHTML =
+        renderHBarChart(t("Books by Author"), countBy(data, (b) => b.author), (l) => l) +
+        renderHBarChart(t("Books by Genre"), countBy(data, (b) => tf(b, "genre")), (l) => l) +
+        renderStatusChart(countBy(data, (b) => b.status)) +
+        renderDonutChart(countBy(data, (b) => b.format));
+    }
+
+    function bookTemplate(item) {
+      const statusLabel = t(STATUS_LABEL[item.status]);
+      return `
+        <article class="card book-card">
+          <div class="book-image"><img src="${item.image}" alt="${bookTitle(item)}" loading="lazy"></div>
+          <div class="book-separator"></div>
+          <div class="book-details">
+            <h3>${bookTitle(item)}</h3>
+            <p class="book-author">${item.author}</p>
+            ${renderRating(item.rating)}
+            <div class="badge-row">
+              <span class="badge badge-status-${item.status}">${statusLabel}</span>
+              <span class="badge">${t(item.format)}</span>
+              <span class="badge">${tf(item, "genre")}</span>
+            </div>
+            <p class="book-synopsis">${tf(item, "synopsis")}</p>
+            <ul class="spec-list">
+              ${originalTitleLine(item)}
+              ${field("Year", item.year)}
+              ${field("Last read", formatLastRead(item.lastRead))}
+            </ul>
+          </div>
+        </article>`;
+    }
+
+    let booksData = [];
+    const filters = { author: "", genre: "", format: "", status: "", rating: "" };
+    let currentSort = "rating";
+
+    function applyAndRender() {
+      let list = booksData.filter((b) =>
+        (!filters.author || b.author === filters.author) &&
+        (!filters.genre || b.genre === filters.genre) &&
+        (!filters.format || b.format === filters.format) &&
+        (!filters.status || b.status === filters.status) &&
+        (!filters.rating || ratingBucket(b.rating) === filters.rating));
+
+      const cmp = {
+        author: (a, b) => a.author.localeCompare(b.author),
+        genre: (a, b) => tf(a, "genre").localeCompare(tf(b, "genre")),
+        year: (a, b) => b.year - a.year,
+        status: (a, b) => STATUS_ORDER.indexOf(b.status) - STATUS_ORDER.indexOf(a.status),
+        rating: (a, b) => (typeof b.rating === "number" ? b.rating : -1) - (typeof a.rating === "number" ? a.rating : -1)
+      }[currentSort];
+      list.sort(cmp);
+
+      document.getElementById("books-list").innerHTML = list.length
+        ? list.map(bookTemplate).join("")
+        : `<p class="empty-state">${t("No books match these filters.")}</p>`;
+    }
+
+    function populateSelect(id, values) {
+      const select = document.getElementById(id);
+      values.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+    }
+
+    // Genre options are translated, so their labels are rebuilt on language change.
+    function populateGenres() {
+      const select = document.getElementById("filter-genre");
+      const current = select.value;
+      const first = select.options[0];
+      select.innerHTML = "";
+      select.appendChild(first);
+      const genres = [...new Map(booksData.map((b) => [b.genre, tf(b, "genre")])).entries()]
+        .sort((a, b) => a[1].localeCompare(b[1]));
+      genres.forEach(([value, label]) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+      select.value = current;
+    }
+
+    loadJson("data/books.json", "books-list").then((data) => {
+      if (!data) return;
+      booksData = data;
+      populateSelect("filter-author", [...new Set(data.map((b) => b.author))].sort());
+      populateGenres();
+      renderDashboard(data);
+      applyAndRender();
+    });
+
+    document.addEventListener("langchange", () => {
+      populateGenres();
+      renderDashboard(booksData);
+      applyAndRender();
+    });
+
+    document.querySelectorAll(".toolbar-btn[data-sort]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentSort = btn.dataset.sort;
+        document.querySelectorAll(".toolbar-btn[data-sort]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        applyAndRender();
+      });
+    });
+
+    Object.keys(filters).forEach((key) => {
+      document.getElementById("filter-" + key).addEventListener("change", (e) => {
+        filters[key] = e.target.value;
+        applyAndRender();
+      });
+    });
+
+    document.getElementById("reset-filters").addEventListener("click", () => {
+      currentSort = "rating";
+      Object.keys(filters).forEach((key) => {
+        filters[key] = "";
+        document.getElementById("filter-" + key).value = "";
+      });
+      document.querySelectorAll(".toolbar-btn[data-sort]").forEach((b) => b.classList.remove("active"));
+      document.querySelector('.toolbar-btn[data-sort="rating"]').classList.add("active");
+      applyAndRender();
+    });
+  </script>
+</body>
+</html>

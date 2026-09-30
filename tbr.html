@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Pantry</title>
+  <meta name="description" content="A personal archive of books read, being read, and waiting on the to-read list.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Book Pantry">
+  <meta property="og:title" content="Book Pantry">
+  <meta property="og:description" content="A personal archive of books read, being read, and waiting on the to-read list.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="tbr">
+  <header class="site-header">
+    <a class="brand" href="index.html">Book Pantry</a>
+    <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav class="site-nav">
+      <a href="index.html" data-pt="Lidos">Read</a>
+      <a href="tbr.html" data-pt="Quero ler">To Read</a>
+      <div class="lang-toggle-group">
+        <button class="lang-toggle active" data-lang="en" type="button">EN</button>
+        <button class="lang-toggle" data-lang="pt" type="button">PT-BR</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h1 data-pt="Quero ler">To Read</h1>
+    <p class="page-intro" data-pt="Livros que estão na minha fila.">Books waiting on my list.</p>
+
+    <div class="tbr-grid" id="tbr-list"></div>
+
+  </main>
+
+  <footer class="site-footer" data-pt="Book Pantry (um projeto pessoal)">Book Pantry (a personal project)</footer>
+  <script src="js/main.js"></script>
+  <script>
+    let tbrData = [];
+
+    function tbrTemplate(item) {
+      return `
+        <article class="card tbr-card">
+          <div class="book-image"><img src="${item.image}" alt="${bookTitle(item)}" loading="lazy"></div>
+          <div class="book-details">
+            <h3>${bookTitle(item)}</h3>
+            <p class="book-author">${item.author} · ${item.year}</p>
+            <div class="badge-row">
+              <span class="badge">${t(item.format)}</span>
+              <span class="badge">${tf(item, "genre")}</span>
+            </div>
+            <p class="book-synopsis">${tf(item, "synopsis")}</p>
+          </div>
+        </article>`;
+    }
+
+    function renderTbr() {
+      document.getElementById("tbr-list").innerHTML = tbrData.length
+        ? tbrData.map(tbrTemplate).join("")
+        : `<p class="empty-state">${t("Nothing here yet.")}</p>`;
+    }
+
+    loadJson("data/tbr.json", "tbr-list").then((data) => {
+      if (!data) return;
+      tbrData = data;
+      renderTbr();
+    });
+    document.addEventListener("langchange", renderTbr);
+  </script>
+</body>
+</html>
