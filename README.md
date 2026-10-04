@@ -1,6 +1,6 @@
 # Book Pantry
 
-A personal archive of books: what I've read (with ratings, status and where I read it) and what's on the to-read list. EN / PT-BR toggle.
+A personal archive of books: what I've read (with ratings, status and where I read it) and what's on the to-read list.
 
 Plain HTML/CSS/JS, no build step, hosted on GitHub Pages. Same look and structure as the sibling `coffee-pantry` and `wine-pantry` sites.
 
@@ -22,7 +22,7 @@ Plain HTML/CSS/JS, no build step, hosted on GitHub Pages. Same look and structur
 
 ## Adding a book
 
-Add an object to `data/books.json` or `data/tbr.json` (fields: `title`, optional `title_pt`, `author`, `year`, `genre`/`genre_pt`, `synopsis`/`synopsis_pt`, `format` = `Libby` | `Kobo Store` | `Physical`, `image`; read books also `rating`, `status`, optional `lastRead` as `YYYY-MM`) and drop the cover in `images/covers/`.
+Add an object to `data/books.json` or `data/tbr.json` (fields: `title`, `author`, `year`, `genre`, `synopsis`, `format` = `Libby` | `Kobo Store` | `Physical`, `image`; read books also `rating`, `status`, optional `lastRead` as `YYYY-MM`) and drop the cover in `images/covers/`.
 
 ## Viewing locally
 

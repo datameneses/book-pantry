@@ -18,57 +18,53 @@
     <a class="brand" href="index.html">Book Pantry</a>
     <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
     <nav class="site-nav">
-      <a href="index.html" data-pt="Lidos">Read</a>
-      <a href="tbr.html" data-pt="Quero ler">To Read</a>
-      <div class="lang-toggle-group">
-        <button class="lang-toggle active" data-lang="en" type="button">EN</button>
-        <button class="lang-toggle" data-lang="pt" type="button">PT-BR</button>
-      </div>
+      <a href="index.html">Read</a>
+      <a href="tbr.html">To Read</a>
     </nav>
   </header>
 
   <main>
-    <h1 data-pt="Lidos">Read</h1>
-    <p class="page-intro" data-pt="Livros que li e estou lendo, com as minhas notas.">Books I've read and am reading, with my ratings.</p>
+    <h1>Read</h1>
+    <p class="page-intro">Books I've read and am reading, with my ratings.</p>
 
     <div class="dashboard" id="books-dashboard"></div>
 
     <div class="toolbar">
       <div class="toolbar-group">
-        <span class="toolbar-label" data-pt="Ordenar por:">Sort by:</span>
-        <button class="toolbar-btn" data-sort="author" type="button" data-pt="Autor">Author</button>
-        <button class="toolbar-btn" data-sort="genre" type="button" data-pt="Gênero">Genre</button>
-        <button class="toolbar-btn" data-sort="year" type="button" data-pt="Ano">Year</button>
-        <button class="toolbar-btn" data-sort="status" type="button" data-pt="Status">Status</button>
-        <button class="toolbar-btn active" data-sort="rating" type="button" data-pt="Minha nota">My Rating</button>
+        <span class="toolbar-label">Sort by:</span>
+        <button class="toolbar-btn" data-sort="author" type="button">Author</button>
+        <button class="toolbar-btn" data-sort="genre" type="button">Genre</button>
+        <button class="toolbar-btn" data-sort="year" type="button">Year</button>
+        <button class="toolbar-btn" data-sort="status" type="button">Status</button>
+        <button class="toolbar-btn active" data-sort="rating" type="button">My Rating</button>
       </div>
       <div class="toolbar-group">
-        <span class="toolbar-label" data-pt="Filtro:">Filter:</span>
-        <select id="filter-author"><option value="" data-pt="Todos os autores">All authors</option></select>
-        <select id="filter-genre"><option value="" data-pt="Todos os gêneros">All genres</option></select>
+        <span class="toolbar-label">Filter:</span>
+        <select id="filter-author"><option value="">All authors</option></select>
+        <select id="filter-genre"><option value="">All genres</option></select>
         <select id="filter-format">
-          <option value="" data-pt="Todos os formatos">All formats</option>
+          <option value="">All formats</option>
           <option value="Libby">Libby</option>
           <option value="Kobo Store">Kobo Store</option>
-          <option value="Physical" data-pt="Físico">Physical</option>
+          <option value="Physical">Physical</option>
         </select>
         <select id="filter-status">
-          <option value="" data-pt="Todos os status">All statuses</option>
-          <option value="reading" data-pt="Lendo">Reading</option>
-          <option value="read" data-pt="Lido">Read</option>
-          <option value="highlighted" data-pt="Lido + Destacado">Read + Highlighted</option>
-          <option value="distilled" data-pt="Lido + Destacado + Destilado em notas">Read + Highlighted + Distilled</option>
+          <option value="">All statuses</option>
+          <option value="reading">Reading</option>
+          <option value="read">Read</option>
+          <option value="highlighted">Read + Highlighted</option>
+          <option value="distilled">Read + Highlighted + Distilled</option>
         </select>
         <select id="filter-rating">
-          <option value="" data-pt="Todas as notas">All ratings</option>
-          <option value="exceptional" data-pt="Excepcional (5.0)">Exceptional (5.0)</option>
-          <option value="very-good" data-pt="Muito bom (4.5)">Very good (4.5)</option>
-          <option value="good" data-pt="Bom (4.0)">Good (4.0)</option>
-          <option value="average" data-pt="Mediano (3.5)">Average (3.5)</option>
-          <option value="disliked" data-pt="Não gostei (≤3.0)">Disliked (≤3.0)</option>
-          <option value="unrated" data-pt="Ainda não avaliado">Not yet rated</option>
+          <option value="">All ratings</option>
+          <option value="exceptional">Exceptional (5.0)</option>
+          <option value="very-good">Very good (4.5)</option>
+          <option value="good">Good (4.0)</option>
+          <option value="average">Average (3.5)</option>
+          <option value="disliked">Disliked (≤3.0)</option>
+          <option value="unrated">Not yet rated</option>
         </select>
-        <button class="toolbar-btn" id="reset-filters" type="button" data-pt="Redefinir">Reset</button>
+        <button class="toolbar-btn" id="reset-filters" type="button">Reset</button>
       </div>
     </div>
 
@@ -76,7 +72,7 @@
 
   </main>
 
-  <footer class="site-footer" data-pt="Book Pantry (um projeto pessoal)">Book Pantry (a personal project)</footer>
+  <footer class="site-footer">Book Pantry (a personal project)</footer>
   <script src="js/main.js"></script>
   <script>
     const STATUS_ORDER = ["reading", "read", "highlighted", "distilled"];
@@ -171,7 +167,6 @@
             </div>
             <p class="book-synopsis">${tf(item, "synopsis")}</p>
             <ul class="spec-list">
-              ${originalTitleLine(item)}
               ${field("Year", item.year)}
               ${field("Last read", formatLastRead(item.lastRead))}
             </ul>
@@ -239,12 +234,6 @@
       populateSelect("filter-author", [...new Set(data.map((b) => b.author))].sort());
       populateGenres();
       renderDashboard(data);
-      applyAndRender();
-    });
-
-    document.addEventListener("langchange", () => {
-      populateGenres();
-      renderDashboard(booksData);
       applyAndRender();
     });
 

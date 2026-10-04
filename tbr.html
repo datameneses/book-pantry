@@ -18,24 +18,20 @@
     <a class="brand" href="index.html">Book Pantry</a>
     <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
     <nav class="site-nav">
-      <a href="index.html" data-pt="Lidos">Read</a>
-      <a href="tbr.html" data-pt="Quero ler">To Read</a>
-      <div class="lang-toggle-group">
-        <button class="lang-toggle active" data-lang="en" type="button">EN</button>
-        <button class="lang-toggle" data-lang="pt" type="button">PT-BR</button>
-      </div>
+      <a href="index.html">Read</a>
+      <a href="tbr.html">To Read</a>
     </nav>
   </header>
 
   <main>
-    <h1 data-pt="Quero ler">To Read</h1>
-    <p class="page-intro" data-pt="Livros que estão na minha fila.">Books waiting on my list.</p>
+    <h1>To Read</h1>
+    <p class="page-intro">Books waiting on my list.</p>
 
     <div class="tbr-grid" id="tbr-list"></div>
 
   </main>
 
-  <footer class="site-footer" data-pt="Book Pantry (um projeto pessoal)">Book Pantry (a personal project)</footer>
+  <footer class="site-footer">Book Pantry (a personal project)</footer>
   <script src="js/main.js"></script>
   <script>
     let tbrData = [];
@@ -67,7 +63,6 @@
       tbrData = data;
       renderTbr();
     });
-    document.addEventListener("langchange", renderTbr);
   </script>
 </body>
 </html>
